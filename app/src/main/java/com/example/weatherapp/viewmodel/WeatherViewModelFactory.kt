@@ -6,8 +6,8 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.weatherapp.model.repository.WeatherRepository
 
 class WeatherViewModelFactory(
-        private val repository: WeatherRepository
-    ) : ViewModelProvider.NewInstanceFactory() {
+    private val repository: WeatherRepository
+) : ViewModelProvider.NewInstanceFactory() {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         try {

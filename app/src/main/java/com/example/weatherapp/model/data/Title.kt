@@ -1,6 +1,6 @@
 package com.example.weatherapp.model.data
 
-data class City(
+data class Title(
     val end: Int,
     val start: Int
 )

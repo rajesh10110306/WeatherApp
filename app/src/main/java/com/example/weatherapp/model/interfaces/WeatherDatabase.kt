@@ -4,10 +4,9 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.weatherapp.model.data.LocalCity
 import com.example.weatherapp.model.data.LocalWeather
 
-@Database(entities = [LocalWeather::class, LocalCity::class], version = 1)
+@Database(entities = [LocalWeather::class], version = 1)
 abstract class WeatherDatabase: RoomDatabase() {
     abstract fun getWeatherDao(): WeatherDao
     companion object {

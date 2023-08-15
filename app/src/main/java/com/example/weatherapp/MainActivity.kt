@@ -5,9 +5,13 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.LocationManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
@@ -16,8 +20,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.weatherapp.databinding.ActivityMainBinding
-import com.example.weatherapp.model.data.LocalCity
-import com.example.weatherapp.model.data.Location
+import com.example.weatherapp.model.data.LocalLocation
 import com.example.weatherapp.model.interfaces.WeatherDatabase
 import com.example.weatherapp.model.repository.WeatherRepository
 import com.example.weatherapp.view.adapters.RecyclerAdapter
@@ -52,9 +55,7 @@ class MainActivity : AppCompatActivity() {
             binding.tempDiff.text = it.temp_min.toString() + "  ~  " + it.temp_max.toString() +" \u2109"
             binding.humidity.text = "Humidity " + it.humidity.toString() + " %"
             binding.feelsLike.text = "Feels like - " + it.feels_like.toString() +" \u2109"
-            binding.cityName.text = it.city
-            binding.stateName.text = it.state
-            binding.countryName.text = it.country
+            binding.cityName.text = it.label
         })
 
         viewModel.data2.observe(this, Observer {
@@ -65,16 +66,42 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this,it, Toast.LENGTH_SHORT).show()
         })
 
-        binding.searchButton.setOnClickListener {
-            val location = binding.searchText.text.toString()
-            viewModel.getCityList(location)
+        binding.editText.addTextChangedListener(object: TextWatcher {
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+            }
+
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+            }
+
+            override fun afterTextChanged(p0: Editable?) {
+                p0?.let {
+                    if(p0.toString().length>=3){
+                        viewModel.isOnline = isOnline(applicationContext)
+                        if (!viewModel.isOnline)    Toast.makeText(this@MainActivity,"You are Offline!!",Toast.LENGTH_SHORT).show()
+                        viewModel.getCityList(p0.toString())
+                    }
+                }
+            }
+
+        })
+
+        if (!isOnline(applicationContext)){
+            viewModel.isOnline = false
+            viewModel.getData("Current Location","")
         }
     }
 
-    fun prepareRecyclerView(viewModel: WeatherViewModel, city: ArrayList<LocalCity>){
+    fun prepareRecyclerView(viewModel: WeatherViewModel, data: ArrayList<LocalLocation>){
         this.binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        val adapter = RecyclerAdapter(viewModel,this,city)
+        val adapter = RecyclerAdapter(viewModel,this,data)
         this.binding.recyclerView.adapter = adapter
+    }
+
+    fun isOnline(context: Context): Boolean {
+        val connectivityManager: ConnectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
     }
 
     private fun getCurrentLocation(){
@@ -90,7 +117,7 @@ class MainActivity : AppCompatActivity() {
             }
             else{
                 Toast.makeText(this,"Get Success", Toast.LENGTH_SHORT).show()
-                viewModel.getData(Location(location.latitude,location.longitude,"","",""))
+                viewModel.getCurrentData(location.latitude.toString(),location.longitude.toString())
             }
         }
     }

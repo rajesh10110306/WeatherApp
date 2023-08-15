@@ -9,25 +9,24 @@ import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherapp.R
-import com.example.weatherapp.model.data.LocalCity
-import com.example.weatherapp.model.data.Location
+import com.example.weatherapp.model.data.LocalLocation
 import com.example.weatherapp.viewmodel.WeatherViewModel
 
-class RecyclerAdapter(private val viewModel: WeatherViewModel, private val context: Context, private val city: ArrayList<LocalCity>) : RecyclerView.Adapter<RecyclerAdapter.ViewHolder>() {
+class RecyclerAdapter(private val viewModel: WeatherViewModel, private val context: Context, private val data: ArrayList<LocalLocation>) : RecyclerView.Adapter<RecyclerAdapter.ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.recycler_item, parent, false)
         return ViewHolder(view)
     }
 
     override fun getItemCount(): Int {
-        return city.size
+        return data.size
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.cityName.text = city[position].city+", "+city[position].state+", "+city[position].country
+        holder.cityName.text = data[position].label
         holder.item.setOnClickListener {
             Log.d("check","Btn clicked")
-            viewModel.getData(Location(city[position].lat,city[position].lon,city[position].city,city[position].state,city[position].country))
+            viewModel.getData(data[position].label,data[position].city)
         }
     }
 

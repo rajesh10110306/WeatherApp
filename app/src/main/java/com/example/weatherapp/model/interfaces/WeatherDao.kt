@@ -1,22 +1,19 @@
 package com.example.weatherapp.model.interfaces
 
 import androidx.room.Dao
-import androidx.room.Insert
 import androidx.room.Query
-import com.example.weatherapp.model.data.LocalCity
+import androidx.room.Upsert
+import com.example.weatherapp.model.data.LocalLocation
 import com.example.weatherapp.model.data.LocalWeather
 
 @Dao
 interface WeatherDao {
-    @Insert
-    suspend fun insertCityWeather(weather: LocalWeather)
+    @Upsert
+    suspend fun upsertCityWeather(weather: LocalWeather)
 
-    @Query("SELECT * FROM localweather WHERE lat=:lat AND lon=:lon")
-    suspend fun getCityWeather(lat:Double, lon:Double) : LocalWeather
+    @Query("SELECT * FROM localweather WHERE label=:label")
+    suspend fun getCityWeather(label:String) : LocalWeather
 
-    @Insert
-    suspend fun insertCity(localCity: ArrayList<LocalCity>)
-
-    @Query("SELECT * FROM localcity WHERE city=:city")
-    suspend fun getCity(city:String) : List<LocalCity>
+    @Query("SELECT label,city FROM localweather")
+    suspend fun getAllCities() : List<LocalLocation>
 }

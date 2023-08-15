@@ -3,112 +3,155 @@ package com.example.weatherapp.viewmodel
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.weatherapp.model.data.LocalCity
+import com.example.weatherapp.model.data.LocalLocation
 import com.example.weatherapp.model.data.LocalWeather
-import com.example.weatherapp.model.data.Location
 import com.example.weatherapp.model.interfaces.RetrofitHelper
+import com.example.weatherapp.model.interfaces.RetrofitHelper2
 import com.example.weatherapp.model.repository.WeatherRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.lang.Exception
 
 class WeatherViewModel(private val repository: WeatherRepository): ViewModel() {
     private lateinit var result : LocalWeather
     val data = MutableLiveData<LocalWeather>()
-    private lateinit var result2 : ArrayList<LocalCity>
-    val data2 = MutableLiveData<ArrayList<LocalCity>>()
+    private var result2:ArrayList<LocalLocation> = ArrayList()
+    val data2 = MutableLiveData<ArrayList<LocalLocation>>()
     private lateinit var error: String
     val exceptionError = MutableLiveData<String>()
-    var location = Location(0.0,0.0,"","","")
+    var isOnline:Boolean = false
 
     init {
-        getData()
+        getData("Dummy","London")
     }
 
-    fun getData(location: Location=this.location) {
-        GlobalScope.launch (Dispatchers.IO) {
-            val flag = getDataFromRoom(location)
-            if(!flag) getDataFromApi(location)
+    fun getCurrentData(lat:String,lon:String){
+        val key = "88c0154a25fb21fb0d30003e6956fb4c"
+        var endPoint = "data/2.5/weather?lat=$lat&lon=$lon&appid=$key"
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                val apiData = RetrofitHelper.api.getCurrentWeather(endPoint)
+                apiData?.body()?.let {
+                    result = LocalWeather(
+                        "Current Location",
+                        it.name,
+                        it.main.temp,
+                        it.main.temp_min,
+                        it.main.temp_max,
+                        it.main.humidity,
+                        it.main.feels_like,
+                    )
+                    Log.d("API Response Weather", result.toString())
+                    data.postValue(result)
+                    repository.upsertCityWeather(result)
+                }
+            } catch (e: Exception) {
+                Log.d("error", e.toString())
+            }
         }
     }
 
-    fun getDataFromApi(location:Location){
+    fun getData(label: String, city: String?) {
+        if (isOnline){
+            getDataFromApi(label,city)
+        }else{
+            getDataFromRoom(label,city)
+        }
+    }
+
+    fun getDataFromApi(label:String,city: String?){
+        Log.d("API Call",label)
+        Log.d("API Call",city?:"")
         val key = "88c0154a25fb21fb0d30003e6956fb4c"
-        var endPoint = "data/2.5/weather?lat=${location.lat}&lon=${location.lon}&appid=$key"
+        var endPoint = "data/2.5/weather?q=$label&appid=$key"
+        var endPoint2 = "data/2.5/weather?q=$city&appid=$key"
 
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 val apiData = RetrofitHelper.api.getCurrentWeather(endPoint)
                 apiData?.body()?.let {
-                    result = LocalWeather(it.main.temp,it.main.temp_min,it.main.temp_max,it.main.humidity,it.main.feels_like,location.lat,location.lon,location.city,location.state,location.country)
-                    Log.d("API Response Weather",result.toString())
+                    result = LocalWeather(
+                        label,
+                        city,
+                        it.main.temp,
+                        it.main.temp_min,
+                        it.main.temp_max,
+                        it.main.humidity,
+                        it.main.feels_like,
+                    )
+                    Log.d("API Response Weather", result.toString())
                     data.postValue(result)
-                    repository.insertCityWeather(result)
+                    repository.upsertCityWeather(result)
                 }
+                if(apiData.code() == 404){
+                    val apiData2 = RetrofitHelper.api.getCurrentWeather(endPoint2)
+                    apiData2?.body()?.let {
+                        result = LocalWeather(
+                            label,
+                            city,
+                            it.main.temp,
+                            it.main.temp_min,
+                            it.main.temp_max,
+                            it.main.humidity,
+                            it.main.feels_like,
+                        )
+                        Log.d("API Response Weather", result.toString())
+                        data.postValue(result)
+                        repository.upsertCityWeather(result)
+                    }
+                    Log.d("API Request", apiData2.toString())
+                }
+                Log.d("API Request", apiData.toString())
+            } catch (e: Exception) {
+                Log.d("error",e.toString())
             }
-            catch (e:Exception){
-                error = "Not Able to Fetch! \n Check Your Internet Connection"
-                exceptionError.postValue(error)
-            }
+        }
+    }
+    fun getDataFromRoom(label:String,city: String?){
+        GlobalScope.launch(Dispatchers.IO) {
+            result = repository.getCityWeather(label)
+            data.postValue(result)
         }
     }
 
-    suspend fun getDataFromRoom(location:Location):Boolean{
-        val roomData = GlobalScope.async (Dispatchers.IO){
-            Log.d("Room call Check",location.toString())
-            repository.getCityWeather(location.lat,location.lon)
-        }
-        roomData.await()?.let {
-            data.postValue(it)
-            return true
-        }
-        roomData.await().let {
-            return false
+    fun getCityList(pattern:String){
+        if (isOnline){
+            getCityListFromApi(pattern)
+        }else{
+            getCityListFromRoom()
         }
     }
 
-    fun getCityList(city: String){
-        GlobalScope.launch (Dispatchers.IO) {
-            val flag = getCityFromRoom(city)
-            if(!flag) getCityFromApi(city)
-        }
-    }
+    fun getCityListFromApi(pattern:String){
+        val key = "fKzVotCk8CmC2teZ3QEn0f9XoL_sZAV585wgTMKFoao"
+        var endPoint = "autocomplete?q=$pattern&apiKey=$key"
 
-    suspend fun getCityFromRoom(city: String):Boolean{
-        val roomData = GlobalScope.async (Dispatchers.IO){
-            Log.d("Room call Check",city)
-            repository.getCity(city)
-        }
-        roomData.await()?.let {
-            result2 = it as ArrayList<LocalCity>
-            data2.postValue(result2)
-        }
-        if(roomData.await().isNotEmpty())    return true
-        return false
-    }
-
-    suspend fun getCityFromApi(city: String){
-        val endPoint = "geo/1.0/direct?q=$city&limit=5&appid=88c0154a25fb21fb0d30003e6956fb4c"
         GlobalScope.launch(Dispatchers.IO) {
             try {
-                val apiData = RetrofitHelper.api.getCityList(endPoint)
+                val apiData = RetrofitHelper2.api.getCity(endPoint)
                 apiData?.body()?.let {
-                    val localCity = ArrayList<LocalCity>()
-                    for(i in it){
-                        localCity.add(LocalCity(i.lat,i.lon,i.name,i.state,i.country))
+                    val items = apiData.body()?.items
+                    items?.let {
+                        val labels:ArrayList<LocalLocation> = ArrayList()
+                        for (i in items){
+                            labels.add(LocalLocation(i.address.label,i.address.city))
+                        }
+                        result2 = labels
+                        Log.d("API Response",result2.toString())
+                        data2.postValue(result2)
                     }
-                    result2 = localCity
-                    Log.d("API Response City",result2.toString())
-                    data2.postValue(result2)
-                    repository.insertCity(result2)
                 }
             }
             catch (e:Exception){
-                error = "Not Able to Fetch! \n Check Your Internet Connection"
-                exceptionError.postValue(error)
+                Log.d("error",e.toString())
             }
+        }
+    }
+    fun getCityListFromRoom(){
+        GlobalScope.launch(Dispatchers.IO) {
+            result2 = repository.getAllCities() as ArrayList<LocalLocation>
+            data2.postValue(result2)
         }
     }
 }

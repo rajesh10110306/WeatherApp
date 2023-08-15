@@ -1,6 +1,6 @@
 package com.example.weatherapp.model.interfaces
 
-import com.example.weatherapp.model.data.City
+import com.example.weatherapp.model.data.CityList
 import com.example.weatherapp.model.data.CurrentWeather
 import retrofit2.Response
 import retrofit2.http.GET
@@ -11,5 +11,5 @@ interface CustomApi {
     suspend fun getCurrentWeather(@Url url:String) : Response<CurrentWeather>
 
     @GET
-    suspend fun getCityList(@Url url:String) : Response<City>
+    suspend fun getCity(@Url url:String) : Response<CityList>
 }
