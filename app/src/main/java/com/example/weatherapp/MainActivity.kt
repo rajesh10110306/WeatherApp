@@ -13,6 +13,7 @@ import android.provider.Settings
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
@@ -59,12 +60,17 @@ class MainActivity : AppCompatActivity() {
         })
 
         viewModel.data2.observe(this, Observer {
-            prepareRecyclerView(viewModel,it)
+            prepareRecyclerView(binding,viewModel,it)
         })
 
         viewModel.exceptionError.observe(this, Observer {
             Toast.makeText(this,it, Toast.LENGTH_SHORT).show()
         })
+
+        binding.editText.setOnClickListener{
+            binding.searchView.visibility = View.VISIBLE
+            binding.cardView.visibility = View.INVISIBLE
+        }
 
         binding.editText.addTextChangedListener(object: TextWatcher {
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
@@ -91,9 +97,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun prepareRecyclerView(viewModel: WeatherViewModel, data: ArrayList<LocalLocation>){
+    fun prepareRecyclerView(binding:ActivityMainBinding,viewModel: WeatherViewModel, data: ArrayList<LocalLocation>){
         this.binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        val adapter = RecyclerAdapter(viewModel,this,data)
+        val adapter = RecyclerAdapter(binding,viewModel,this,data)
         this.binding.recyclerView.adapter = adapter
     }
 
