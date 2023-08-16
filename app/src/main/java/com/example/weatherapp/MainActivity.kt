@@ -64,7 +64,8 @@ class MainActivity : AppCompatActivity() {
         })
 
         viewModel.exceptionError.observe(this, Observer {
-            Toast.makeText(this,it, Toast.LENGTH_SHORT).show()
+            Log.d("Errors",it)
+            Toast.makeText(this,"Please Check Your \nInternet Connection", Toast.LENGTH_SHORT).show()
         })
 
         binding.editText.setOnClickListener{
@@ -85,6 +86,8 @@ class MainActivity : AppCompatActivity() {
                         viewModel.isOnline = isOnline(applicationContext)
                         if (!viewModel.isOnline)    Toast.makeText(this@MainActivity,"You are Offline!!",Toast.LENGTH_SHORT).show()
                         viewModel.getCityList(p0.toString())
+                        binding.searchView.visibility = View.VISIBLE
+                        binding.cardView.visibility = View.INVISIBLE
                     }
                 }
             }

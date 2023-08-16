@@ -20,7 +20,7 @@ class WeatherViewModel(private val repository: WeatherRepository): ViewModel() {
     val data2 = MutableLiveData<ArrayList<LocalLocation>>()
     private lateinit var error: String
     val exceptionError = MutableLiveData<String>()
-    var isOnline:Boolean = false
+    var isOnline:Boolean = true
 
     init {
         getData("Dummy","London")
@@ -47,7 +47,8 @@ class WeatherViewModel(private val repository: WeatherRepository): ViewModel() {
                     repository.upsertCityWeather(result)
                 }
             } catch (e: Exception) {
-                Log.d("error", e.toString())
+                error = e.toString()
+                exceptionError.postValue(error)
             }
         }
     }
@@ -100,18 +101,22 @@ class WeatherViewModel(private val repository: WeatherRepository): ViewModel() {
                         data.postValue(result)
                         repository.upsertCityWeather(result)
                     }
-                    Log.d("API Request", apiData2.toString())
                 }
-                Log.d("API Request", apiData.toString())
             } catch (e: Exception) {
-                Log.d("error",e.toString())
+                error = e.toString()
+                exceptionError.postValue(error)
             }
         }
     }
     fun getDataFromRoom(label:String,city: String?){
         GlobalScope.launch(Dispatchers.IO) {
-            result = repository.getCityWeather(label)
-            data.postValue(result)
+            try {
+                result = repository.getCityWeather(label)
+                data.postValue(result)
+            } catch (e: Exception) {
+                error = e.toString()
+                exceptionError.postValue(error)
+            }
         }
     }
 
@@ -142,16 +147,21 @@ class WeatherViewModel(private val repository: WeatherRepository): ViewModel() {
                         data2.postValue(result2)
                     }
                 }
-            }
-            catch (e:Exception){
-                Log.d("error",e.toString())
+            } catch (e: Exception) {
+                error = e.toString()
+                exceptionError.postValue(error)
             }
         }
     }
     fun getCityListFromRoom(){
         GlobalScope.launch(Dispatchers.IO) {
-            result2 = repository.getAllCities() as ArrayList<LocalLocation>
-            data2.postValue(result2)
+            try {
+                result2 = repository.getAllCities() as ArrayList<LocalLocation>
+                data2.postValue(result2)
+            }catch (e: Exception) {
+                error = e.toString()
+                exceptionError.postValue(error)
+            }
         }
     }
 }
