@@ -1,10 +1,12 @@
 package com.example.weatherapp.view.adapters
 
 import android.content.Context
+import android.text.Editable
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
@@ -30,16 +32,17 @@ class RecyclerAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.cityName.text = data[position].label
-        holder.item.setOnClickListener {
+        holder.cityName.setOnClickListener {
             Log.d("check","Btn clicked")
+            binding.editText.text = data[position].label.toEditable()
             viewModel.getData(data[position].label,data[position].city)
             binding.cardView.visibility = View.VISIBLE
             binding.searchView.visibility = View.INVISIBLE
         }
     }
+    fun String.toEditable(): Editable =  Editable.Factory.getInstance().newEditable(this)
 
     class ViewHolder(ItemView: View) : RecyclerView.ViewHolder(ItemView) {
-        val item = itemView.findViewById<CardView>(R.id.item)
         val cityName = itemView.findViewById<TextView>(R.id.cityName)
     }
 }

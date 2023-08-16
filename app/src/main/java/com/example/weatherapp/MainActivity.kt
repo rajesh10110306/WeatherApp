@@ -56,7 +56,7 @@ class MainActivity : AppCompatActivity() {
             binding.tempDiff.text = it.temp_min.toString() + "  ~  " + it.temp_max.toString() +" \u2109"
             binding.humidity.text = "Humidity " + it.humidity.toString() + " %"
             binding.feelsLike.text = "Feels like - " + it.feels_like.toString() +" \u2109"
-            binding.cityName.text = it.label
+            binding.labelName.text = it.label
         })
 
         viewModel.data2.observe(this, Observer {
@@ -68,9 +68,13 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this,"Please Check Your \nInternet Connection", Toast.LENGTH_SHORT).show()
         })
 
-        binding.editText.setOnClickListener{
+        binding.location.setOnClickListener {
             binding.searchView.visibility = View.VISIBLE
             binding.cardView.visibility = View.INVISIBLE
+        }
+        binding.backButton.setOnClickListener {
+            binding.cardView.visibility = View.VISIBLE
+            binding.searchView.visibility = View.INVISIBLE
         }
 
         binding.editText.addTextChangedListener(object: TextWatcher {
@@ -86,8 +90,6 @@ class MainActivity : AppCompatActivity() {
                         viewModel.isOnline = isOnline(applicationContext)
                         if (!viewModel.isOnline)    Toast.makeText(this@MainActivity,"You are Offline!!",Toast.LENGTH_SHORT).show()
                         viewModel.getCityList(p0.toString())
-                        binding.searchView.visibility = View.VISIBLE
-                        binding.cardView.visibility = View.INVISIBLE
                     }
                 }
             }
