@@ -56,7 +56,11 @@ class MainActivity : AppCompatActivity() {
             binding.tempDiff.text = it.temp_min.toString() + "  ~  " + it.temp_max.toString() +" \u2109"
             binding.humidity.text = "Humidity " + it.humidity.toString() + " %"
             binding.feelsLike.text = "Feels like - " + it.feels_like.toString() +" \u2109"
-            binding.labelName.text = it.label
+            if(it.label=="Current Location"){
+                binding.labelName.text = it.city
+            } else{
+                binding.labelName.text = it.label
+            }
         })
 
         viewModel.data2.observe(this, Observer {
