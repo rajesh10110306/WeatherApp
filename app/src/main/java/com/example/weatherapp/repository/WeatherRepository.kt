@@ -4,12 +4,14 @@ import android.content.Context
 import android.util.Log
 import com.example.weatherapp.api.WeatherApi
 import com.example.weatherapp.data.LocalForecast
+import com.example.weatherapp.data.LocalForecastWeather
 import com.example.weatherapp.data.LocalLocation
 import com.example.weatherapp.data.LocalWeather
 import com.example.weatherapp.db.WeatherDatabase
 import com.example.weatherapp.utils.convertToLocalForecast
 import com.example.weatherapp.utils.convertToLocalWeather
 import com.example.weatherapp.utils.isNetworkAvailable
+import kotlinx.coroutines.async
 import java.lang.Exception
 
 class WeatherRepository(

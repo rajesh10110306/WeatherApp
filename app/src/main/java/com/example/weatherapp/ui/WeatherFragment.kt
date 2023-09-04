@@ -41,7 +41,7 @@ class WeatherFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         lifecycleScope.launch {
-            viewModel.weather.collect{
+            viewModel.weatherforecast.collect{
                 binding.data = it.data
             }
         }

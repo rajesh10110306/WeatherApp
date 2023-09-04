@@ -31,7 +31,7 @@ class RecyclerAdapter(
         holder.cityName.setOnClickListener {
             Log.d("check","Btn clicked")
 //            binding.editText.text = data[position].label.toEditable()
-            viewModel.getWeather(data[position].label,data[position].city)
+            viewModel.getForecastWeather(data[position].label,data[position].city)
             Navigation.findNavController(holder.itemView).navigateUp()
         }
     }

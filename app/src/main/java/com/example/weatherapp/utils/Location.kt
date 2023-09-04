@@ -42,7 +42,7 @@ class Location(private val context: Context){
                     city = geocoder.getFromLocation(location.latitude,location.longitude,1)?.get(0)?.locality.toString()
                 }
 //                viewModel.getLocationWeather(location.latitude.toString(),location.longitude.toString())
-                viewModel.getWeather("Current Location",city)
+                viewModel.getForecastWeather("Current Location",city)
             }
         }
     }
