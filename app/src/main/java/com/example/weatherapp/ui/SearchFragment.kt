@@ -21,7 +21,7 @@ import com.example.weatherapp.databinding.FragmentSearchBinding
 import com.example.weatherapp.viewmodel.WeatherViewModel
 import kotlinx.coroutines.launch
 
-class Search : Fragment() {
+class SearchFragment : Fragment() {
     private lateinit var binding: FragmentSearchBinding
     private val viewModel: WeatherViewModel by activityViewModels()
 

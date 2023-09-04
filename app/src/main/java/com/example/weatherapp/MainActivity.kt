@@ -4,7 +4,9 @@ import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
+import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
+import com.example.weatherapp.databinding.ActivityMainBinding
 import com.example.weatherapp.repository.WeatherRepository
 import com.example.weatherapp.utils.Location
 import com.example.weatherapp.utils.LocationPermission
@@ -13,13 +15,13 @@ import com.example.weatherapp.viewmodel.WeatherViewModel
 import com.example.weatherapp.viewmodel.WeatherViewModelFactory
 
 class MainActivity : AppCompatActivity() {
-
+    private lateinit var binding: ActivityMainBinding
     private lateinit var repository: WeatherRepository
     private lateinit var factory: WeatherViewModelFactory
     private lateinit var viewModel: WeatherViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = DataBindingUtil.setContentView(this,R.layout.activity_main)
 
         repository = (application as WeatherApplication).weatherRepository
         factory = WeatherViewModelFactory(repository)
