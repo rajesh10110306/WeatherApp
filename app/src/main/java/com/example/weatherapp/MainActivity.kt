@@ -5,28 +5,20 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.ViewModelProvider
 import com.example.weatherapp.databinding.ActivityMainBinding
-import com.example.weatherapp.repository.WeatherRepository
 import com.example.weatherapp.utils.UserPermission
 import com.example.weatherapp.utils.getCurrentLocation
 import com.example.weatherapp.utils.requestPermission
 import com.example.weatherapp.utils.checkPermission
 import com.example.weatherapp.viewmodel.WeatherViewModel
-import com.example.weatherapp.viewmodel.WeatherViewModelFactory
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private lateinit var repository: WeatherRepository
-    private lateinit var factory: WeatherViewModelFactory
-    private lateinit var viewModel: WeatherViewModel
+    private val viewModel by viewModel<WeatherViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this,R.layout.activity_main)
-
-        repository = WeatherApplication.weatherRepository
-        factory = WeatherViewModelFactory(repository)
-        viewModel = ViewModelProvider(this,factory).get(WeatherViewModel::class.java)
 
         if(!checkPermission()){
             requestPermission()
