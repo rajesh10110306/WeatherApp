@@ -21,7 +21,6 @@ fun Context.getCurrentLocation(getLocalWeather: (city: String)->Unit) {
     fusedLocationProviderClient.lastLocation.addOnCompleteListener(this as Activity){ task ->
         val location = task.result
         val geocoder = Geocoder(this, Locale.getDefault())
-        var city = "London"
         if(location==null){
             Toast.makeText(this,"Null Received", Toast.LENGTH_SHORT).show()
         }
@@ -30,13 +29,12 @@ fun Context.getCurrentLocation(getLocalWeather: (city: String)->Unit) {
             if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.TIRAMISU){
                 geocoder.getFromLocation(location.latitude,location.longitude,1,object: Geocoder.GeocodeListener{
                     override fun onGeocode(address: MutableList<Address>) {
-                        city = address[0].locality
+                        getLocalWeather(address[0].locality)
                     }
                 })
             }else{
-                city = geocoder.getFromLocation(location.latitude,location.longitude,1)?.get(0)?.locality.toString()
+                getLocalWeather(geocoder.getFromLocation(location.latitude,location.longitude,1)?.get(0)?.locality.toString())
             }
-            getLocalWeather(city)
         }
     }
 }
