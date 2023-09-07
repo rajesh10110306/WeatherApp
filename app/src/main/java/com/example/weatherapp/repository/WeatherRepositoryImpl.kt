@@ -2,6 +2,7 @@ package com.example.weatherapp.repository
 
 import android.content.Context
 import android.util.Log
+import com.example.weatherapp.api.PlacesApi
 import com.example.weatherapp.api.WeatherApi
 import com.example.weatherapp.data.LocalForecast
 import com.example.weatherapp.data.LocalLocation
@@ -14,7 +15,7 @@ import java.lang.Exception
 
 class WeatherRepositoryImpl(
     private val weatherApi: WeatherApi,
-    private val placeApi: WeatherApi,
+    private val placeApi: PlacesApi,
     private val weatherDao: WeatherDao,
     private val applicationContext: Context
 ): WeatherRepository {

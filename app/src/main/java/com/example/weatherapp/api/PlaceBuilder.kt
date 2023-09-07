@@ -5,11 +5,11 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object PlaceBuilder {
     private val baseUrl = "https://autocomplete.search.hereapi.com/v1/"
-    val api: WeatherApi by lazy {
+    val api: PlacesApi by lazy {
         Retrofit.Builder()
             .baseUrl(baseUrl)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(WeatherApi::class.java)
+            .create(PlacesApi::class.java)
     }
 }
