@@ -51,8 +51,12 @@ class WeatherViewModel(private val repository: WeatherRepository): ViewModel(){
             try{
                 val weather = async { repository.getCurrentWeather(label,city) }
                 val forecast = async { repository.getForecast(label,city) }
-                val weatherForecastResponse = convertToLocalForecastWeather(weather.await().data!!, forecast.await().data!!)
-                _weatherforecast.value = Response.Success(weatherForecastResponse)
+                if (weather.await().data!=null && forecast.await().data!=null){
+                    val weatherForecastResponse = convertToLocalForecastWeather(weather.await().data!!, forecast.await().data!!)
+                    _weatherforecast.value = Response.Success(weatherForecastResponse)
+                } else{
+                    _weatherforecast.value = Response.Failure(weather.await().message+forecast.await().message)
+                }
             }
             catch (e: Exception){
                 _weatherforecast.value = Response.Failure(e.message.toString())

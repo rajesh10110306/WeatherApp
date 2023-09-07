@@ -29,7 +29,7 @@ class SearchFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_search, container, false);
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_search, container, false)
         return binding.root
     }
 
@@ -38,7 +38,9 @@ class SearchFragment : Fragment() {
 
         lifecycleScope.launch {
             viewModel.place.collect{
-                prepareRecyclerView(binding,viewModel, it.data!! as ArrayList<LocalLocation>)
+                it.data?.let {
+                    prepareRecyclerView(binding,viewModel, it as ArrayList<LocalLocation>)
+                }
             }
         }
 
