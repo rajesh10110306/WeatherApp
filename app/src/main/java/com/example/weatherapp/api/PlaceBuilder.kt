@@ -3,8 +3,8 @@ package com.example.weatherapp.api
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-object RetrofitHelper {
-    private val baseUrl = "https://api.openweathermap.org/data/2.5/"
+object PlaceBuilder {
+    private val baseUrl = "https://autocomplete.search.hereapi.com/v1/"
     val api: WeatherApi by lazy {
         Retrofit.Builder()
             .baseUrl(baseUrl)

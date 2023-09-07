@@ -1,10 +1,11 @@
 package com.example.weatherapp
 
 import android.app.Application
-import com.example.weatherapp.api.RetrofitHelper
-import com.example.weatherapp.api.RetrofitHelper2
+import com.example.weatherapp.api.WeatherBuilder
+import com.example.weatherapp.api.PlaceBuilder
 import com.example.weatherapp.db.WeatherDatabase
 import com.example.weatherapp.repository.WeatherRepository
+import com.example.weatherapp.repository.WeatherRepositoryImpl
 
 class WeatherApplication: Application() {
     companion object{
@@ -17,9 +18,9 @@ class WeatherApplication: Application() {
     }
 
     fun initialize(){
-        val api = RetrofitHelper.api
-        val api2 = RetrofitHelper2.api
-        val database = WeatherDatabase(applicationContext)
-        weatherRepository = WeatherRepository(api,api2,database,applicationContext)
+        val weatherApi = WeatherBuilder.api
+        val placeApi = PlaceBuilder.api
+        val weatherDao = WeatherDatabase(applicationContext).getWeatherDao()
+        weatherRepository = WeatherRepositoryImpl(weatherApi,placeApi,weatherDao,applicationContext)
     }
 }
