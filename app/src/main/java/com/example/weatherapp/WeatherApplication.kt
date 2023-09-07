@@ -7,7 +7,9 @@ import com.example.weatherapp.db.WeatherDatabase
 import com.example.weatherapp.repository.WeatherRepository
 
 class WeatherApplication: Application() {
-    lateinit var weatherRepository: WeatherRepository
+    companion object{
+        lateinit var weatherRepository: WeatherRepository
+    }
 
     override fun onCreate() {
         super.onCreate()

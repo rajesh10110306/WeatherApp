@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this,R.layout.activity_main)
 
-        repository = (application as WeatherApplication).weatherRepository
+        repository = WeatherApplication.weatherRepository
         factory = WeatherViewModelFactory(repository)
         viewModel = ViewModelProvider(this,factory).get(WeatherViewModel::class.java)
 
