@@ -8,9 +8,10 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.example.weatherapp.databinding.ActivityMainBinding
 import com.example.weatherapp.repository.WeatherRepository
-import com.example.weatherapp.utils.Location
-import com.example.weatherapp.utils.LocationPermission
 import com.example.weatherapp.utils.UserPermission
+import com.example.weatherapp.utils.getCurrentLocation
+import com.example.weatherapp.utils.requestPermission
+import com.example.weatherapp.utils.checkPermission
 import com.example.weatherapp.viewmodel.WeatherViewModel
 import com.example.weatherapp.viewmodel.WeatherViewModelFactory
 
@@ -27,10 +28,12 @@ class MainActivity : AppCompatActivity() {
         factory = WeatherViewModelFactory(repository)
         viewModel = ViewModelProvider(this,factory).get(WeatherViewModel::class.java)
 
-        val userPermission = LocationPermission(this)
-        userPermission.checkPermission()
-        userPermission.requestPermission()
-        Location(this).getCurrentLocation(viewModel)
+        if(!checkPermission()){
+            requestPermission()
+        }
+        getCurrentLocation{city ->
+            viewModel.getForecastWeather("Current Location",city)
+        }
     }
 
     override fun onRequestPermissionsResult(
@@ -42,7 +45,9 @@ class MainActivity : AppCompatActivity() {
         if(requestCode == UserPermission.PERMISSION_REQUEST_ACCESS_LOCATION){
             if(grantResults.isNotEmpty() && grantResults[0]== PackageManager.PERMISSION_GRANTED){
                 Toast.makeText(this,"Granted", Toast.LENGTH_SHORT).show()
-                Location(this).getCurrentLocation(viewModel)
+                getCurrentLocation{city ->
+                    viewModel.getForecastWeather("Current Location",city)
+                }
             }
             else{
                 Toast.makeText(this,"Denied", Toast.LENGTH_SHORT).show()
