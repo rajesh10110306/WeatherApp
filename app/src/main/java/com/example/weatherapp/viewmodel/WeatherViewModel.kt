@@ -10,39 +10,39 @@ import com.example.weatherapp.repository.Response
 import com.example.weatherapp.repository.WeatherRepository
 import com.example.weatherapp.utils.convertToLocalForecastWeather
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.lang.Exception
 
 class WeatherViewModel(private val repository: WeatherRepository): ViewModel(){
-    private val _weather = MutableSharedFlow<Response<LocalWeather>>(1)
-    val weather: SharedFlow<Response<LocalWeather>>
+    private val _weather = MutableStateFlow<Response<LocalWeather>>(Response.Loading())
+    val weather: StateFlow<Response<LocalWeather>>
         get() = _weather
 
-    private val _forecast = MutableSharedFlow<Response<List<LocalForecast>>>(1)
-    val forecast: SharedFlow<Response<List<LocalForecast>>>
+    private val _forecast = MutableStateFlow<Response<List<LocalForecast>>>(Response.Loading())
+    val forecast: StateFlow<Response<List<LocalForecast>>>
         get() = _forecast
 
-    private val _weatherforecast = MutableSharedFlow<Response<LocalForecastWeather>>(1)
-    val weatherforecast: SharedFlow<Response<LocalForecastWeather>>
+    private val _weatherforecast = MutableStateFlow<Response<LocalForecastWeather>>(Response.Loading())
+    val weatherforecast: StateFlow<Response<LocalForecastWeather>>
         get() = _weatherforecast
 
-    private val _place = MutableSharedFlow<Response<List<LocalLocation>>>(1)
-    val place: SharedFlow<Response<List<LocalLocation>>>
+    private val _place = MutableStateFlow<Response<List<LocalLocation>>>(Response.Loading())
+    val place: StateFlow<Response<List<LocalLocation>>>
         get() = _place
 
     fun getWeather(label: String, city: String?){
         viewModelScope.launch {
             val weatherResponse = repository.getCurrentWeather(label,city)
-            _weather.emit(weatherResponse)
+            _weather.value = weatherResponse
         }
     }
 
     fun getForecast(label: String, city: String?){
         viewModelScope.launch {
             val forecastResponse = repository.getForecast(label,city)
-            _forecast.emit(forecastResponse)
+            _forecast.value = forecastResponse
         }
     }
 
@@ -52,10 +52,10 @@ class WeatherViewModel(private val repository: WeatherRepository): ViewModel(){
                 val weather = async { repository.getCurrentWeather(label,city) }
                 val forecast = async { repository.getForecast(label,city) }
                 val weatherForecastResponse = convertToLocalForecastWeather(weather.await().data!!, forecast.await().data!!)
-                _weatherforecast.emit(Response.Success(weatherForecastResponse))
+                _weatherforecast.value = Response.Success(weatherForecastResponse)
             }
             catch (e: Exception){
-                _weatherforecast.emit(Response.Failure(e.message.toString()))
+                _weatherforecast.value = Response.Failure(e.message.toString())
             }
         }
     }
@@ -63,7 +63,7 @@ class WeatherViewModel(private val repository: WeatherRepository): ViewModel(){
     fun getCity(pattern: String){
         viewModelScope.launch {
             val citiesResponse = repository.getCity(pattern)
-            _place.emit(citiesResponse)
+            _place.value = citiesResponse
         }
     }
 }
