@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace 'com.example.weatherapp'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.example.weatherapp"
         minSdk 28
-        targetSdk 33
+        targetSdk 34
         versionCode 1
         versionName "1.0"
 
@@ -33,6 +33,10 @@ android {
     }
     buildFeatures {
         dataBinding true
+        compose true
+    }
+    composeOptions{
+        kotlinCompilerExtensionVersion = "1.4.6"
     }
 }
 
@@ -70,4 +74,7 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
 
     implementation "io.insert-koin:koin-android-compat:3.4.3"
+
+
+    implementation "androidx.compose.runtime:runtime:1.5.1"
 }
