@@ -1,8 +1,10 @@
 package com.example.weatherapp.compose
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,7 +14,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -24,12 +29,19 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.weatherapp.R
 import com.example.weatherapp.utils.dateFormatConverter
 import com.example.weatherapp.viewmodel.WeatherViewModel
+import kotlin.math.ceil
+
+private val climateType = listOf("Sunrise", "Sunset", "Wind Speed", "Pressure", "Humidity", "Air Quality")
+private val climateImage = listOf(R.drawable.sunrise,R.drawable.sunset,R.drawable.wind,R.drawable.pressure,R.drawable.humidity,R.drawable.smoke)
+private val forecastType = listOf("Avg Temp","Avg Pressure","Avg Humidity")
 
 @Composable
 fun WeatherInfoScreen(navController: NavController,viewModel: WeatherViewModel){
@@ -64,7 +76,19 @@ fun WeatherInfoScreen(navController: NavController,viewModel: WeatherViewModel){
                 "Min Temp " + it.temp_min.toString() + " °C",
                 "Max Temp " + it.temp_max.toString() + " °C"
             )
+            ClimateAnalysis(listOf(dateFormatConverter(it.sunrise.toLong()),
+                dateFormatConverter(it.sunset.toLong()),
+                it.speed.toString() + " Kmph",
+                it.pressure.toString() + " hPa",
+                it.humidity.toString() + " %",
+                "perfect"
+            ))
+            ForecastAnalysis(listOf(it.avgTemp.toString() + " °C",
+                it.avgPressure.toString() + " hPa",
+                it.avgHumidity.toString() + " %"
+            ))
         }?:Spacer(modifier = Modifier.height(20.dp))
+
     }
 }
 
@@ -135,6 +159,70 @@ fun WeatherInfo(
         ) {
             AddH3Text(text = tempMin)
             AddH3Text(text = tempMax)
+        }
+    }
+}
+
+
+@Composable
+fun ClimateAnalysis(climateValues: List<String>) {
+    Box(modifier = Modifier
+        .padding(top = 20.dp)
+        .fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        Card(
+            shape = RoundedCornerShape(15.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+            modifier = Modifier
+                .fillMaxWidth(0.9f),
+            colors = CardDefaults.cardColors(Color(0xFF69CDFA))
+        ){
+            Column(modifier = Modifier
+                .fillMaxWidth(),
+                verticalArrangement = Arrangement.SpaceAround
+            ) {
+                for (i in 1..ceil(climateType.size.toFloat()/3).toInt()){
+                    Row(modifier = Modifier
+                        .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceAround
+                    ) {
+                        for (j in 0..2){
+                            Column(horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Image(
+                                    painter = painterResource(id = climateImage[(i-1)*3+j]),
+                                    contentDescription = "sunrise Img",
+                                    modifier = Modifier
+                                        .width(32.dp)
+                                        .height(32.dp)
+                                        .padding(vertical = 5.dp)
+                                )
+                                AddH2Text(text = climateType[(i-1)*3+j])
+                                AddH3Text(text = climateValues[(i-1)*3+j])
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+}
+
+@Composable
+fun ForecastAnalysis(forecastValues: List<String>) {
+    Row(modifier = Modifier
+        .padding(top = 20.dp)
+        .fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        for (i in forecastType.indices){
+            Column(horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                AddH2Text(text = forecastType[i])
+                AddH3Text(text = forecastValues[i])
+            }
         }
     }
 }
