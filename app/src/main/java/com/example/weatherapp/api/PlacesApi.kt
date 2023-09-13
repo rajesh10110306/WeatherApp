@@ -7,7 +7,7 @@ import retrofit2.http.Query
 
 interface PlacesApi {
     @GET("autocomplete")
-    suspend fun getCity(
+    suspend fun getCities(
         @Query("q") pattern: String,
         @Query("apiKey") apiKey: String
     ) : Response<Places>
