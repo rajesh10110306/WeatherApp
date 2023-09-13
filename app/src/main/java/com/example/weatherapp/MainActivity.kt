@@ -21,11 +21,10 @@ class MainActivity : ComponentActivity() {
             Navigation(viewModel)
         }
 
-        if(!checkPermission()){
+        if(!checkPermission())
             requestPermission()
-        }
         getCurrentLocation{city ->
-            viewModel.getForecastWeather("Current Location",city)
+            viewModel.getForecastWeather(city,city)
         }
     }
 
@@ -35,14 +34,15 @@ class MainActivity : ComponentActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if(requestCode == UserPermission.PERMISSION_REQUEST_ACCESS_LOCATION){
-            if(grantResults.isNotEmpty() && grantResults[0]== PackageManager.PERMISSION_GRANTED){
-                Toast.makeText(this,"Granted", Toast.LENGTH_SHORT).show()
-                getCurrentLocation{city ->
-                    viewModel.getForecastWeather("Current Location",city)
-                }
-            }
-            else{
+        when{
+            (requestCode == UserPermission.PERMISSION_REQUEST_ACCESS_LOCATION &&
+                    grantResults.isNotEmpty() && grantResults[0]== PackageManager.PERMISSION_GRANTED) -> {
+                        Toast.makeText(this,"Granted", Toast.LENGTH_SHORT).show()
+                        getCurrentLocation{city ->
+                            viewModel.getForecastWeather(city,city)
+                        }
+                    }
+            else -> {
                 Toast.makeText(this,"Denied", Toast.LENGTH_SHORT).show()
             }
         }
