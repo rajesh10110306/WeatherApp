@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,12 +29,14 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.weatherapp.R
 import com.example.weatherapp.utils.dateFormatConverter
+import com.example.weatherapp.viewmodel.Response
 import com.example.weatherapp.viewmodel.WeatherViewModel
 import kotlin.math.ceil
 
@@ -65,35 +66,44 @@ fun WeatherInfoScreen(navController: NavController,viewModel: WeatherViewModel){
         SearchCity{
             navController.navigate(Screen.CitySearchScreen.route)
         }
-        weatherInfo.data?.let {
-            LocationInfo(it.label,
-                dateFormatConverter(it.update_time.toLong())
-            )
-            WeatherInfo(it.status,
-                it.icon,
-                it.temp.toString() + " °C",
-                "Feels Like " + it.feels_like.toString() + " °C",
-                "Min Temp " + it.temp_min.toString() + " °C",
-                "Max Temp " + it.temp_max.toString() + " °C"
-            )
-            ClimateAnalysis(listOf(dateFormatConverter(it.sunrise.toLong()),
-                dateFormatConverter(it.sunset.toLong()),
-                it.speed.toString() + " Kmph",
-                it.pressure.toString() + " hPa",
-                it.humidity.toString() + " %",
-                "perfect"
-            ))
-            ForecastAnalysis(listOf(it.avgTemp.toString() + " °C",
-                it.avgPressure.toString() + " hPa",
-                it.avgHumidity.toString() + " %"
-            ))
-        }?:Spacer(modifier = Modifier.height(20.dp))
-
+        when(weatherInfo){
+            is Response.Loading -> {
+                ProgressBar()
+            }
+            is Response.Success -> {
+                weatherInfo.data?.let {
+                    LocationInfo(it.label,
+                        dateFormatConverter(it.update_time.toLong())
+                    )
+                    WeatherInfo(it.status,
+                        it.icon,
+                        it.temp.toString() + " °C",
+                        "Feels Like " + it.feels_like.toString() + " °C",
+                        "Min Temp " + it.temp_min.toString() + " °C",
+                        "Max Temp " + it.temp_max.toString() + " °C"
+                    )
+                    ClimateAnalysis(listOf(dateFormatConverter(it.sunrise.toLong()),
+                        dateFormatConverter(it.sunset.toLong()),
+                        it.speed.toString() + " Kmph",
+                        it.pressure.toString() + " hPa",
+                        it.humidity.toString() + " %",
+                        "perfect"
+                    ))
+                    ForecastAnalysis(listOf(it.avgTemp.toString() + " °C",
+                        it.avgPressure.toString() + " hPa",
+                        it.avgHumidity.toString() + " %"
+                    ))
+                }
+            }
+            is Response.Failure -> {
+                ErrorHandler(weatherInfo.message)
+            }
+        }
     }
 }
 
 @Composable
-fun SearchCity(fetchCity: ()->Unit){
+private fun SearchCity(fetchCity: ()->Unit){
     BasicTextField(
         value = "",
         onValueChange = {},
@@ -114,7 +124,7 @@ fun SearchCity(fetchCity: ()->Unit){
 }
 
 @Composable
-fun LocationInfo(label: String, updateTime: String) {
+private fun LocationInfo(label: String, updateTime: String) {
     Column(modifier = Modifier
         .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -125,7 +135,7 @@ fun LocationInfo(label: String, updateTime: String) {
 }
 
 @Composable
-fun WeatherInfo(
+private fun WeatherInfo(
     status: String,
     icon: String,
     temp: String,
@@ -165,7 +175,7 @@ fun WeatherInfo(
 
 
 @Composable
-fun ClimateAnalysis(climateValues: List<String>) {
+private fun ClimateAnalysis(climateValues: List<String>) {
     Box(modifier = Modifier
         .padding(top = 20.dp)
         .fillMaxWidth(),
@@ -211,7 +221,7 @@ fun ClimateAnalysis(climateValues: List<String>) {
 }
 
 @Composable
-fun ForecastAnalysis(forecastValues: List<String>) {
+private fun ForecastAnalysis(forecastValues: List<String>) {
     Row(modifier = Modifier
         .padding(top = 20.dp)
         .fillMaxWidth(),
@@ -228,16 +238,16 @@ fun ForecastAnalysis(forecastValues: List<String>) {
 }
 
 @Composable
-fun AddH1Text(text: String){
-    Text(text = text, modifier = Modifier.padding(vertical = 5.dp), fontSize = 32.sp)
+private fun AddH1Text(text: String){
+    Text(text = text, textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 5.dp), fontSize = 32.sp)
 }
 
 @Composable
-fun AddH2Text(text: String){
+private fun AddH2Text(text: String){
     Text(text = text, modifier = Modifier.padding(vertical = 5.dp), fontSize = 20.sp)
 }
 
 @Composable
-fun AddH3Text(text: String){
+private fun AddH3Text(text: String){
     Text(text = text, modifier = Modifier.padding(vertical = 5.dp), fontSize = 16.sp)
 }

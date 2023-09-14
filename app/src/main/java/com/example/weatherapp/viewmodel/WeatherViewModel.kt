@@ -37,6 +37,7 @@ class WeatherViewModel(private val repository: WeatherRepository, private val ap
         get() = _place
 
     fun getWeather(label: String, city: String?){
+        _weather.value = Response.Loading()
         if (isNetworkAvailable(applicationContext))
             getWeatherFromApi(label, city)
         else
@@ -48,7 +49,7 @@ class WeatherViewModel(private val repository: WeatherRepository, private val ap
             viewModelScope.launch {
                 val apiData = repository.getWeatherFromApi(label)
                 when{
-                    apiData.isSuccessful -> {
+                    apiData.code()!=404 -> {
                         apiData?.body()?.let {
                             val weather = convertToLocalWeather(label,city,it)
                             _weather.value = Response.Success(weather)
@@ -57,11 +58,18 @@ class WeatherViewModel(private val repository: WeatherRepository, private val ap
                     }
                     (apiData.code() == 404 && !city.isNullOrEmpty()) -> {
                         val apiData = repository.getWeatherFromApi(city)
+                        if(apiData.code()==404){
+                            _forecast.value = Response.Failure("Error 404.\nSomething Went Wrong.\nPlease try again later")
+                            return@launch
+                        }
                         apiData?.body()?.let {
                             val weather = convertToLocalWeather(label,city,it)
                             _weather.value = Response.Success(weather)
                             repository.UpdateWeatherInRoom(weather)
                         }
+                    }
+                    else -> {
+                        _weather.value = Response.Failure("Something Went Wrong.\nPlease try again later")
                     }
                 }
             }
@@ -85,6 +93,7 @@ class WeatherViewModel(private val repository: WeatherRepository, private val ap
     }
 
     fun getForecast(label: String, city: String?){
+        _forecast.value = Response.Loading()
         if (isNetworkAvailable(applicationContext))
             getForecastFromApi(label, city)
         else
@@ -96,7 +105,7 @@ class WeatherViewModel(private val repository: WeatherRepository, private val ap
             viewModelScope.launch {
                 val apiData = repository.getForecastFromApi(label)
                 when{
-                    apiData.isSuccessful -> {
+                    apiData.code()!=404 -> {
                         apiData?.body()?.let {
                             val forecast = convertToLocalForecast(it)
                             _forecast.value = Response.Success(forecast)
@@ -104,10 +113,17 @@ class WeatherViewModel(private val repository: WeatherRepository, private val ap
                     }
                     (apiData.code() == 404 && !city.isNullOrEmpty()) -> {
                         val apiData = repository.getForecastFromApi(city)
+                        if(apiData.code()==404){
+                            _forecast.value = Response.Failure("Error 404.\nSomething Went Wrong.\nPlease try again later")
+                            return@launch
+                        }
                         apiData?.body()?.let {
                             val forecast = convertToLocalForecast(it)
                             _forecast.value = Response.Success(forecast)
                         }
+                    }
+                    else -> {
+                        _forecast.value = Response.Failure("Something Went Wrong.\nPlease try again later")
                     }
                 }
             }
@@ -119,6 +135,7 @@ class WeatherViewModel(private val repository: WeatherRepository, private val ap
     }
 
     fun getForecastWeather(label: String, city: String?){
+        _weatherforecast.value = Response.Loading()
         if (isNetworkAvailable(applicationContext))
             getForecastWeatherFromApi(label,city)
         else
@@ -131,7 +148,24 @@ class WeatherViewModel(private val repository: WeatherRepository, private val ap
                 val weatherData = async { repository.getWeatherFromApi(label) }
                 val forecastData = async { repository.getForecastFromApi(label) }
                 when{
-                    weatherData.await().isSuccessful && forecastData.await().isSuccessful -> {
+                    weatherData.await().code()!=404 && forecastData.await().code()!=404  -> {
+                        weatherData.await().body()?.let {weather->
+                            forecastData.await().body()?.let {forecast->
+                                _weatherforecast.value = Response.Success(
+                                    convertToLocalForecastWeather(convertToLocalWeather(label,city,weather),
+                                        convertToLocalForecast(forecast))
+                                )
+                            }
+                        }
+                        Log.d("check",weatherData.await().toString())
+                    }
+                    (city!=null) -> {
+                        val weatherData = async { repository.getWeatherFromApi(city) }
+                        val forecastData = async { repository.getForecastFromApi(city) }
+                        if(weatherData.await().code()==404){
+                            _weatherforecast.value = Response.Failure("Error 404.\nSomething Went Wrong.\nPlease try again later")
+                            return@launch
+                        }
                         weatherData.await().body()?.let {weather->
                             forecastData.await().body()?.let {forecast->
                                 _weatherforecast.value = Response.Success(
@@ -141,17 +175,8 @@ class WeatherViewModel(private val repository: WeatherRepository, private val ap
                             }
                         }
                     }
-                    !city.isNullOrEmpty() -> {
-                        val weatherData = async { repository.getWeatherFromApi(city) }
-                        val forecastData = async { repository.getForecastFromApi(city) }
-                        weatherData.await().body()?.let {weather->
-                            forecastData.await().body()?.let {forecast->
-                                _weatherforecast.value = Response.Success(
-                                    convertToLocalForecastWeather(convertToLocalWeather(label,city,weather),
-                                        convertToLocalForecast(forecast))
-                                )
-                            }
-                        }
+                    else -> {
+                        _weatherforecast.value = Response.Failure("Something Went Wrong.\nPlease try again later")
                     }
                 }
             }
@@ -163,6 +188,7 @@ class WeatherViewModel(private val repository: WeatherRepository, private val ap
     }
 
     fun getCity(pattern: String){
+        _place.value = Response.Loading()
         if(isNetworkAvailable(applicationContext))
             getCitiesFromApi(pattern)
         else
@@ -173,6 +199,10 @@ class WeatherViewModel(private val repository: WeatherRepository, private val ap
         try{
             viewModelScope.launch {
                 val apiData = repository.getCitiesFromApi(pattern)
+                if(apiData.code()==404){
+                    _place.value = Response.Failure("Something Went Wrong.\nPlease try again later")
+                    return@launch
+                }
                 apiData?.body()?.let {
                     val items = apiData.body()?.items
                     items?.let {

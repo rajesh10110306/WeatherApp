@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.weatherapp.data.LocalLocation
+import com.example.weatherapp.viewmodel.Response
 import com.example.weatherapp.viewmodel.WeatherViewModel
 
 @Composable
@@ -37,10 +38,20 @@ fun CitySearchScreen(navController: NavController,viewModel: WeatherViewModel){
         SearchBar{
             viewModel.getCity(it)
         }
-        cityInfo.data?.let {
-            CityInfo(cityList = it){label,city ->
-                viewModel.getForecastWeather(label,city)
-                navController.navigateUp()
+        when(cityInfo){
+            is Response.Loading -> {
+                ProgressBar()
+            }
+            is Response.Success -> {
+                cityInfo.data?.let {
+                    CityInfo(cityList = it){label,city ->
+                        viewModel.getForecastWeather(label,city)
+                        navController.navigateUp()
+                    }
+                }
+            }
+            is Response.Failure -> {
+                ErrorHandler(cityInfo.message)
             }
         }
     }
@@ -74,7 +85,7 @@ private fun CityInfo(cityList: List<LocalLocation>, fetchForecastWeather: (Strin
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        fetchForecastWeather(cityList[it].label,cityList[it].city)
+                        fetchForecastWeather(cityList[it].label, cityList[it].city)
                     }
                     .padding(horizontal = 30.dp, vertical = 18.dp),
                 fontSize = 18.sp
